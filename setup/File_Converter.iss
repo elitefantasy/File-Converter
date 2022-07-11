@@ -25,7 +25,7 @@ DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 OutputDir=E:\3 Programing\Github\File-Converter\setup
 OutputBaseFilename=File_Converter_Setup
-SetupIconFile=E:\3 Programing\Github\File-Converter\output\File_converter\icons\convert.ico
+SetupIconFile=E:\3 Programing\Github\File-Converter\dist\File_converter\icons\convert.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -35,13 +35,16 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
+
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "E:\3 Programing\Github\File-Converter\output\File_converter\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "E:\3 Programing\Github\File-Converter\output\File_converter\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; before install do this
+Source: "E:\3 Programing\Github\File-Converter\dist\File_converter\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\3 Programing\Github\File-Converter\dist\File_converter\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

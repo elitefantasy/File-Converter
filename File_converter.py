@@ -1,5 +1,5 @@
 # PyQt Imports
-from PyQt5.QtWidgets import QWidget,QApplication,QPushButton,QComboBox,QFileDialog,QLabel,QProgressBar
+from PyQt5.QtWidgets import QWidget,QApplication,QPushButton,QComboBox,QFileDialog,QLabel,QProgressBar,QMessageBox
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
 
@@ -7,10 +7,11 @@ from PIL import Image
 from time import sleep,perf_counter
 from pathlib import Path
 from pdf2image import convert_from_path
-from urllib.request import urlopen
-import os,webbrowser,threading
+from urllib.request import urlopen,urlretrieve
+import os,webbrowser,threading,subprocess
 
 # Variables
+File_Converter_Setup_Url='https://github.com/elitefantasy/File-Converter/raw/main/setup/File_Converter_Setup.exe'
 versionUrl='https://raw.githubusercontent.com/elitefantasy/File-Converter/main/Version.txt'
 Poppler_Path='poppler-22.04.0\\bin'
 USERNAME=os.getlogin()
@@ -75,18 +76,61 @@ class UI(QWidget):
         self.progressBar=self.findChild(QProgressBar,'progressBar')
         self.progressBar.setHidden(True)
     
+    # function to download files with progress bar
+    def Handle_Progress(self, blocknum, blocksize, totalsize):
+        ## calculate the progress
+        readed_data = blocknum * blocksize
+        if totalsize > 0:
+            download_percentage = int(readed_data * 100 / totalsize)
+            self.label_status.setText("Status:🔽Downloading File_Converter_Setup.exe")
+            self.progressBar.setHidden(False)
+            self.progressBar.setValue(download_percentage)
+            QApplication.processEvents()
+            self.label_status.setText("Status:✅File_Converter_Setup.exe Succefully downloaded")
+            self.progressBar.setHidden(True)
+            
+        
+    
     def updateapp(self):
         print("Checking for Updates")
         update=False
         versionSource=open('Version.txt','r')
-        versionContenets=versionSource.readline()
+        versionContents=versionSource.readline()
         
         # get newest version
         updateSource=urlopen(versionUrl)
-        updateContent=updateSource.readline().decode('utf-8')
-        print(updateContent)
-        
+        updateContents=updateSource.readline().decode('utf-8')
+        # only version number
         updateversion=urlopen(versionUrl).readline().decode('utf-8').replace("Version","").replace("(current)","")
+        if updateContents != versionContents:
+            update =True
+            # checking file size of setup
+            file=urlopen(File_Converter_Setup_Url)
+            fileSizeByte=int(file.length)
+            fileSizeMb=str(int(fileSizeByte/1048576))
+            
+            # showing the message box
+            msg=QMessageBox()
+            msg.setIcon(QMessageBox.Information)
+            msg.setWindowTitle("Check App Update")
+            msg.setText("New Version is Available: "+updateversion+"\nDo You want To Download(file size: "+fileSizeMb+" ) The Update")
+            print("Updates are available")
+            msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+    
+            
+            retval=msg.exec_()
+            if retval==1024:
+                down_url =File_Converter_Setup_Url
+                save_loc = f'C:/Users/{USERNAME}/Desktop/File_Converter_Setup.exe'
+                urlretrieve(down_url,save_loc, self.Handle_Progress)
+                proc = subprocess.Popen([save_loc], shell=True,stdin=None, stdout=None, stderr=None, close_fds=True)
+        
+        if update == False:
+            msg=QMessageBox()
+            msg.setIcon(QMessageBox.Information)
+            msg.setWindowTitle("Check App Update")
+            msg.setText("You are already running latest version: "+updateversion)
+            msg.exec_()
     
     def clear_func(self):
         global filepath
@@ -170,6 +214,7 @@ class UI(QWidget):
         # Convert File
             try:
                 if filename!="":
+                    Path(f"{downloadFold_path}\\File Converter").mkdir(parents=True, exist_ok=True)
                     start_time = perf_counter()
                     self.label_status.setText("Status:🧐Converting "+filename)
                     QApplication.processEvents()
@@ -185,7 +230,6 @@ class UI(QWidget):
                     
                     # convert file
                     if convert_from_type in ('pdf'): # pdf to image
-                        Path(f"{downloadFold_path}\\File Converter").mkdir(parents=True, exist_ok=True)
                         def convert_pdf_to_images():
                             convert_pdf_to_images_status=""
                             images = convert_from_path(filepath,poppler_path=Poppler_Path)
