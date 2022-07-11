@@ -1,1 +1,7 @@
 Version 1.0.0 (current)
+[New]
+    new gradient look
+    Extension supports
+        jpg,jpeg,png,ico,pdf
+    open folder functionality
+    pdf to image and other conversionsw
